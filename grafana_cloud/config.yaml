@@ -1,0 +1,30 @@
+name: "Grafana Cloud"
+description: "Send metrics & logs to Grafana Cloud"
+version: "0.0.1"
+slug: "grafana_cloud"
+init: false
+arch:
+  - amd64
+  - aarch64
+options:
+  stack_name: null
+  access_token: null
+  instance_name: homeassistant
+  log_level: info
+  scrape_interval: 60s
+schema:
+  stack_name: str
+  access_token: str
+  instance_name: str?
+  log_level: list(debug|info|warn|error)
+  scrape_interval: str?
+homeassistant_api: true
+map:
+  - homeassistant_config
+  - addon_config:rw
+ports:
+  80/tcp: null
+ports_description:
+  80/tcp: "Debug UI"
+webui: "http://[HOST]:[PORT:80]/"
+watchdog: "http://[HOST]:[PORT:80]/"

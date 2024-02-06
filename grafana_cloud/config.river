@@ -1,0 +1,69 @@
+module.git "grafana_cloud" {
+  repository = "https://github.com/grafana/agent-modules.git"
+  path = "modules/grafana-cloud/autoconfigure/module.river"
+  revision = "main"
+  pull_frequency = "0s"
+  arguments {
+    stack_name = env("STACK_NAME")
+    token = env("ACCESS_TOKEN")
+  }
+}
+
+logging {
+  level    = "info"
+  format   = "logfmt"
+  write_to = [loki.process.agent.receiver]
+}
+
+loki.process "agent" {
+  forward_to = [module.git.grafana_cloud.exports.logs_receiver]
+  stage.static_labels {
+    values = {
+      instance = env("INSTANCE_NAME"),
+    }
+  }
+}
+
+prometheus.scrape "agent" {
+  forward_to = [module.git.grafana_cloud.exports.metrics_receiver]
+  targets = [
+    {
+      "__address__" = "0.0.0.0:80",
+      "instance" = env("INSTANCE_NAME"),
+    },
+  ]
+  scrape_interval = env("SCRAPE_INTERVAL")
+}
+
+loki.source.file "homeassistant" {
+  forward_to = [loki.process.homeassistant.receiver]
+  targets = [
+    {
+      "__path__" = "/homeassistant/home-assistant.log",
+      "instance" = env("INSTANCE_NAME"),
+      "component" = "homeassistant",
+    },
+  ]
+}
+
+loki.process "homeassistant" {
+  forward_to = [module.git.grafana_cloud.exports.logs_receiver]
+  stage.multiline {
+    firstline = "^\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{3} "
+    max_lines = 1000
+  }
+}
+
+prometheus.scrape "homeassistant" {
+  forward_to = [module.git.grafana_cloud.exports.metrics_receiver]
+  targets = [
+    {
+      "__address__" = "supervisor:80",
+      "instance" = env("INSTANCE_NAME"),
+    },
+  ]
+  scrape_interval = env("SCRAPE_INTERVAL")
+  metrics_path = "/core/api/prometheus"
+  bearer_token = env("SUPERVISOR_TOKEN")
+  scheme = "http"
+}

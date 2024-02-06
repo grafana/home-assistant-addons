@@ -1,0 +1,4 @@
+# https://developers.home-assistant.io/docs/add-ons/repository#repository-configuration
+name: Grafana Home Assistant add-on repository
+url: 'https://github.com/grafana/home-assistant-addons'
+maintainer: Dan Cech <dcech@grafana.com>
