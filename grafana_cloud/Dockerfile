@@ -9,8 +9,5 @@ RUN cd /tmp && \
     unzip agent.zip && mv grafana-agent-* /usr/bin/grafana-agent && \
     rm agent.zip
 
-# Copy data for add-on
-COPY run.sh config.river /
-RUN chmod a+x /run.sh
-
-CMD [ "/run.sh" ]
+# Copy files for addon
+COPY rootfs /

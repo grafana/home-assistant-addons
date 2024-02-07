@@ -10,7 +10,17 @@ It will gather stats from your Home Assistant install and export them to Grafana
 
 ## Setup
 
-To configure the addon, first create a [Grafana Cloud](https://grafana.com/products/cloud/) account and set up your stack.
+This addon requires the [Prometheus integration](https://www.home-assistant.io/integrations/prometheus/) be enabled so that Home Assistant will expose stats.
+
+To start a minimal configuration, just add the following line to your `configuration.yaml` file and restart Home Assistant.
+
+```
+prometheus:
+```
+
+If you would like to define the specific stats you would like to expose, you can follow the instructions in the Prometheus [integration docs](https://www.home-assistant.io/integrations/prometheus/).
+
+To configure the Grafana Cloud addon, first create a [Grafana Cloud](https://grafana.com/products/cloud/) account and set up your stack.
 
 Copy the stack name, and paste it into the stack name field in the addon configuration.
 
@@ -31,6 +41,8 @@ Finally, add a token to the policy.
 Copy the token, and paste it into the token field in the addon configuration.
 
 ![Create Access Token](create-access-token.png)
+
+After saving the configuration, start the addon and it will begin exporting logs and metrics to Grafana Cloud
 
 [grafana]: https://grafana.com
 [grafana-cloud]: https://grafana.com/products/cloud/

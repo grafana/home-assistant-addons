@@ -1,6 +1,6 @@
 name: "Grafana Cloud"
 description: "Send metrics & logs to Grafana Cloud"
-version: "0.0.1"
+version: "0.0.2"
 slug: "grafana_cloud"
 init: false
 arch:
@@ -28,3 +28,4 @@ ports_description:
   80/tcp: "Debug UI"
 webui: "http://[HOST]:[PORT:80]/"
 watchdog: "http://[HOST]:[PORT:80]/"
+image: "ghcr.io/grafana/hass-addon-grafana-cloud-{arch}"

@@ -1,5 +1,10 @@
 #!/usr/bin/with-contenv bashio
 
+# ==============================================================================
+# Start the agent service
+# s6-overlay docs: https://github.com/just-containers/s6-overlay
+# ==============================================================================
+
 export STACK_NAME=$(bashio::config 'stack_name')
 export ACCESS_TOKEN=$(bashio::config 'access_token')
 export INSTANCE_NAME=$(bashio::config 'instance_name')
