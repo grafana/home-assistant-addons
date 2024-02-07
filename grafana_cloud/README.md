@@ -34,13 +34,13 @@ Next you need to create a new Access Policy:
   - Logs: write
   - Stacks: read
 
-![Create Access Policy](https://github.com/grafana/home-assistant-addons/tree/main/grafana_cloud/images/create-access-policy.png)
+![Create Access Policy](images/create-access-policy.png)
 
 Finally, add a token to the policy.
 
 Copy the token, and paste it into the token field in the addon configuration.
 
-![Create Access Token](https://github.com/grafana/home-assistant-addons/tree/main/grafana_cloud/images/create-access-token.png)
+![Create Access Token](images/create-access-token.png)
 
 After saving the configuration, start the addon and it will begin exporting logs and metrics to Grafana Cloud
 
