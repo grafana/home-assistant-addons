@@ -1,0 +1,15 @@
+configuration:
+  stack_name:
+    name: Stack Name
+    description: The name of your Grafana Cloud stack
+  access_token:
+    name: Access Token
+    description: An access policy token with at least metrics:write, logs:write and stacks:read permissions
+  instance_name:
+    name: Instance Name
+    description: An identifier for your Home Assistant instance, will be set as the instance tag on all logs and metrics
+  scrape_interval:
+    name: Scrape Interval
+    description: How often to send metrics to Grafana Cloud
+  log_level:
+    name: Log Level

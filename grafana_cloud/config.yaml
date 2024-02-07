@@ -10,14 +10,14 @@ options:
   stack_name: null
   access_token: null
   instance_name: homeassistant
-  log_level: info
   scrape_interval: 60s
+  log_level: info
 schema:
   stack_name: str
   access_token: str
   instance_name: str?
-  log_level: list(debug|info|warn|error)
   scrape_interval: str?
+  log_level: list(debug|info|warn|error)
 homeassistant_api: true
 map:
   - homeassistant_config
