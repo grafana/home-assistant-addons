@@ -1,6 +1,6 @@
 name: "Grafana Cloud"
 description: "Send metrics & logs to Grafana Cloud"
-version: "0.0.2"
+version: "0.0.3"
 slug: "grafana_cloud"
 init: false
 arch:

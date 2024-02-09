@@ -1,7 +1,7 @@
 module.git "grafana_cloud" {
   repository = "https://github.com/grafana/agent-modules.git"
   path = "modules/grafana-cloud/autoconfigure/module.river"
-  revision = "main"
+  revision = "3a62fd0"
   pull_frequency = "0s"
   arguments {
     stack_name = env("STACK_NAME")
