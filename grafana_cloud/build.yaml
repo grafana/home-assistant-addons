@@ -6,5 +6,6 @@ labels:
   org.opencontainers.image.description: "Grafana Cloud Addon."
   org.opencontainers.image.source: "https://github.com/grafana/home-assistant-addons"
   org.opencontainers.image.licenses: "Apache License 2.0"
+  org.opencontainers.image.vendor: "Grafana Labs"
 args:
   ALLOY_VERSION: "v1.1.0"
