@@ -1,6 +1,6 @@
 build_from:
-  amd64: "ghcr.io/home-assistant/amd64-base:3.19"
-  aarch64: "ghcr.io/home-assistant/aarch64-base:3.19"
+  amd64: "ghcr.io/home-assistant/amd64-base:3.20"
+  aarch64: "ghcr.io/home-assistant/aarch64-base:3.20"
 labels:
   org.opencontainers.image.title: "Home Assistant Add-on: Grafana Cloud"
   org.opencontainers.image.description: "Grafana Cloud Addon."
@@ -8,4 +8,4 @@ labels:
   org.opencontainers.image.licenses: "Apache License 2.0"
   org.opencontainers.image.vendor: "Grafana Labs"
 args:
-  ALLOY_VERSION: "v1.1.0"
+  ALLOY_VERSION: "v1.3.1"
