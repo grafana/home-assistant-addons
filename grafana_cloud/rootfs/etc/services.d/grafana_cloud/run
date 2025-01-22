@@ -12,4 +12,9 @@ export LOG_LEVEL=$(bashio::config 'log_level')
 export SCRAPE_INTERVAL=$(bashio::config 'scrape_interval')
 export ALLOY_DEPLOY_MODE=hass-addon-grafana-cloud
 
-exec /usr/bin/grafana-alloy run --server.http.listen-addr=0.0.0.0:80 --storage.path=/config /config.alloy
+CONFIG_FILE="/config.alloy"
+if bashio::fs.file_exists "/config/config.alloy"; then
+  CONFIG_FILE="/config/config.alloy"
+fi
+
+exec /usr/bin/grafana-alloy run --server.http.listen-addr=0.0.0.0:80 --storage.path=/config $CONFIG_FILE
