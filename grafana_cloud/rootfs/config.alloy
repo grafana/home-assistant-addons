@@ -68,3 +68,50 @@ prometheus.scrape "homeassistant" {
   bearer_token = env("SUPERVISOR_TOKEN")
   scheme = "http"
 }
+
+discovery.relabel "integrations_node_exporter" {
+    targets = prometheus.exporter.unix.integrations_node_exporter.targets
+
+    rule {
+        target_label = "instance"
+        replacement  = "homeassistant"
+    }
+
+    rule {
+        target_label = "job"
+        replacement = "integrations/node_exporter"
+    }
+}
+
+prometheus.exporter.unix "integrations_node_exporter" {
+    disable_collectors = ["ipvs", "btrfs", "infiniband", "xfs", "zfs"]
+
+    filesystem {
+        fs_types_exclude     = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|tmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$"
+        mount_points_exclude = "^/(dev|proc|run/credentials/.+|sys|var/lib/docker/.+)($|/)"
+        mount_timeout        = "5s"
+    }
+
+    netclass {
+        ignored_devices = "^(veth.*|cali.*|[a-f0-9]{15})$"
+    }
+
+    netdev {
+        device_exclude = "^(veth.*|cali.*|[a-f0-9]{15})$"
+    }
+}
+
+prometheus.scrape "integrations_node_exporter" {
+    targets    = discovery.relabel.integrations_node_exporter.output
+    forward_to = [prometheus.relabel.integrations_node_exporter.receiver]
+}
+
+prometheus.relabel "integrations_node_exporter" {
+    forward_to = [grafana_cloud.stack.receivers.metrics]
+
+    rule {
+        source_labels = ["__name__"]
+        regex         = "node_scrape_collector_.+"
+        action        = "drop"
+    }
+}

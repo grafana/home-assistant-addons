@@ -19,6 +19,9 @@ schema:
   scrape_interval: str?
   log_level: list(debug|info|warn|error)
 homeassistant_api: true
+host_network: true
+host_pid: true
+docker_api: true
 map:
   - homeassistant_config
   - addon_config:rw
