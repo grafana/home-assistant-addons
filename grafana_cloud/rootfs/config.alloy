@@ -36,15 +36,26 @@ prometheus.scrape "alloy" {
   scrape_interval = env("SCRAPE_INTERVAL")
 }
 
-loki.source.file "homeassistant" {
+discovery.docker "linux" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "logs_integrations_docker" {
+  targets = []
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex = "/(.*)"
+    target_label = "service_name"
+  }
+}
+
+loki.source.docker "default" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.docker.linux.targets
+  labels     = {"platform" = "docker"}
+  relabel_rules = discovery.relabel.logs_integrations_docker.rules
   forward_to = [loki.process.homeassistant.receiver]
-  targets = [
-    {
-      "__path__" = "/homeassistant/home-assistant.log",
-      "instance" = env("INSTANCE_NAME"),
-      "component" = "homeassistant",
-    },
-  ]
 }
 
 loki.process "homeassistant" {
