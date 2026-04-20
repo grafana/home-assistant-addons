@@ -21,15 +21,15 @@ jobs:
       changed: ${{ steps.changed_addons.outputs.changed }}
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Get changed files
         id: changed_files
-        uses: jitterbit/get-changed-files@v1
+        uses: jitterbit/get-changed-files@b17fbb00bdc0c0f63fcf166580804b4d2cdc2a42 # v1
 
       - name: Find add-on directories
         id: addons
-        uses: home-assistant/actions/helpers/find-addons@master
+        uses: home-assistant/actions/helpers/find-addons@f6f29a7ee3fa0eccadf3620a7b9ee00ab54ec03b # master
 
       - name: Get changed add-ons
         id: changed_addons
@@ -68,11 +68,11 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Get information
         id: info
-        uses: home-assistant/actions/helpers/info@master
+        uses: home-assistant/actions/helpers/info@f6f29a7ee3fa0eccadf3620a7b9ee00ab54ec03b # master
         with:
           path: "./${{ matrix.addon }}"
 
@@ -92,7 +92,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: env.BUILD_ARGS != '--test'
-        uses: docker/login-action@v3.3.0
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -100,7 +100,7 @@ jobs:
 
       - name: Build ${{ matrix.addon }} add-on
         if: steps.check.outputs.build_arch == 'true'
-        uses: home-assistant/builder@2024.08.2
+        uses: home-assistant/builder@a60da4f9075353679f2d9f5d708526e2403144dd # 2024.08.2
         with:
           args: |
             ${{ env.BUILD_ARGS }} \
