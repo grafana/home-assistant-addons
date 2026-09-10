@@ -1,7 +1,7 @@
 import.git "grafana_cloud" {
   repository = "https://github.com/grafana/alloy-modules.git"
   path = "modules/cloud/grafana/cloud/module.alloy"
-  revision = "v0.2.11"
+  revision = "9c838a1fd98962edf80393cf5f5f94bbb416ecc1" # v0.2.11
   pull_frequency = "0s"
 }
 
