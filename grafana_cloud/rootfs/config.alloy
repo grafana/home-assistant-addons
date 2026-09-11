@@ -6,8 +6,8 @@ import.git "grafana_cloud" {
 }
 
 grafana_cloud.stack "receivers" {
-  stack_name = env("STACK_NAME")
-  token = env("ACCESS_TOKEN")
+  stack_name = sys.env("STACK_NAME")
+  token = sys.env("ACCESS_TOKEN")
 }
 
 logging {
@@ -20,7 +20,7 @@ loki.process "alloy" {
   forward_to = [grafana_cloud.stack.receivers.logs]
   stage.static_labels {
     values = {
-      instance = env("INSTANCE_NAME"),
+      instance = sys.env("INSTANCE_NAME"),
     }
   }
 }
@@ -30,10 +30,10 @@ prometheus.scrape "alloy" {
   targets = [
     {
       "__address__" = "0.0.0.0:80",
-      "instance" = env("INSTANCE_NAME"),
+      "instance" = sys.env("INSTANCE_NAME"),
     },
   ]
-  scrape_interval = env("SCRAPE_INTERVAL")
+  scrape_interval = sys.env("SCRAPE_INTERVAL")
 }
 
 loki.source.file "homeassistant" {
@@ -41,7 +41,7 @@ loki.source.file "homeassistant" {
   targets = [
     {
       "__path__" = "/homeassistant/home-assistant.log",
-      "instance" = env("INSTANCE_NAME"),
+      "instance" = sys.env("INSTANCE_NAME"),
       "component" = "homeassistant",
     },
   ]
@@ -60,11 +60,11 @@ prometheus.scrape "homeassistant" {
   targets = [
     {
       "__address__" = "supervisor:80",
-      "instance" = env("INSTANCE_NAME"),
+      "instance" = sys.env("INSTANCE_NAME"),
     },
   ]
-  scrape_interval = env("SCRAPE_INTERVAL")
+  scrape_interval = sys.env("SCRAPE_INTERVAL")
   metrics_path = "/core/api/prometheus"
-  bearer_token = env("SUPERVISOR_TOKEN")
+  bearer_token = sys.env("SUPERVISOR_TOKEN")
   scheme = "http"
 }

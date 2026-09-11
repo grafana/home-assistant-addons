@@ -4,6 +4,7 @@
 
 - Fix Alloy config comment syntax preventing startup
 - Remove digest pins from build.yaml to satisfy addon linter schema
+- Replace deprecated env() with sys.env() in config.alloy
 
 ## 0.2.1
 

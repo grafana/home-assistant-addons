@@ -51,7 +51,7 @@ jobs:
       - name: Check out code from GitHub
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - name: Validate Alloy config syntax
+      - name: Validate Alloy config
         env:
           ADDON: ${{ matrix.path }}
         run: |
@@ -69,4 +69,4 @@ jobs:
 
           echo "Validating ${config} against Alloy ${version}"
           docker run --rm -v "${PWD}/${config}:/config.alloy:ro" \
-            "grafana/alloy:${version}" fmt /config.alloy > /dev/null
+            "grafana/alloy:${version}" validate /config.alloy
