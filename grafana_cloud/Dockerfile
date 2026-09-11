@@ -1,7 +1,7 @@
-ARG BUILD_FROM
-FROM $BUILD_FROM
+FROM ghcr.io/home-assistant/base:3.24@sha256:93ef607824e3f27e868f11b10938283a98bf880ed57bcf8eaa81c6c2d521f6f5
 
-ARG ALLOY_VERSION BUILD_ARCH
+ARG ALLOY_VERSION="v1.19.2"
+ARG BUILD_ARCH
 RUN apk --update add libc6-compat && rm -rf /var/cache/apk/*
 
 RUN cd /tmp && \
@@ -9,5 +9,11 @@ RUN cd /tmp && \
     unzip alloy.zip && mv alloy-linux-* /usr/bin/grafana-alloy && \
     rm alloy.zip
 
-# Copy files for addon
 COPY rootfs /
+
+LABEL \
+    org.opencontainers.image.title="Home Assistant Add-on: Grafana Cloud" \
+    org.opencontainers.image.description="Grafana Cloud Addon." \
+    org.opencontainers.image.source="https://github.com/grafana/home-assistant-addons" \
+    org.opencontainers.image.licenses="Apache License 2.0" \
+    org.opencontainers.image.vendor="Grafana Labs"

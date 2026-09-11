@@ -1,9 +1,5 @@
 name: Builder
 
-env:
-  BUILD_ARGS: "--test"
-  MONITORED_FILES: "build.yaml config.yaml Dockerfile rootfs"
-
 on:
   push:
     branches:
@@ -12,37 +8,49 @@ on:
     branches:
       - main
 
+env:
+  MONITORED_FILES: "build.yaml config.yaml Dockerfile rootfs"
+
 jobs:
   init:
-    runs-on: ubuntu-latest
     name: Initialize builds
+    runs-on: ubuntu-latest
     outputs:
       changed_addons: ${{ steps.changed_addons.outputs.addons }}
       changed: ${{ steps.changed_addons.outputs.changed }}
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Get changed files
         id: changed_files
-        uses: jitterbit/get-changed-files@v1
+        if: github.event_name == 'pull_request'
+        run: |
+          changed=$(gh pr diff ${{ github.event.pull_request.number }} --name-only)
+          echo "all<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$changed" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Find add-on directories
         id: addons
-        uses: home-assistant/actions/helpers/find-addons@master
+        uses: home-assistant/actions/helpers/find-addons@a7c616ce81ccda50150bf1595786c71b1883fabb # master
 
       - name: Get changed add-ons
         id: changed_addons
         run: |
           declare -a changed_addons
           for addon in ${{ steps.addons.outputs.addons }}; do
-            if [[ "${{ steps.changed_files.outputs.all }}" =~ $addon ]]; then
+            if [[ "${{ github.event_name }}" == "push" ]]; then
+              changed_addons+=("\"${addon}\",");
+            elif [[ "${{ steps.changed_files.outputs.all }}" =~ $addon ]]; then
               for file in ${{ env.MONITORED_FILES }}; do
-                  if [[ "${{ steps.changed_files.outputs.all }}" =~ $addon/$file ]]; then
-                    if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
-                      changed_addons+=("\"${addon}\",");
-                    fi
+                if [[ "${{ steps.changed_files.outputs.all }}" =~ $addon/$file ]]; then
+                  if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
+                    changed_addons+=("\"${addon}\",");
                   fi
+                fi
               done
             fi
           done
@@ -56,56 +64,121 @@ jobs:
           else
             echo "No add-on had any monitored files changed (${{ env.MONITORED_FILES }})";
           fi
-  build:
+
+  prepare:
+    name: Prepare ${{ matrix.addon }} build
     needs: init
-    runs-on: ubuntu-latest
     if: needs.init.outputs.changed == 'true'
-    name: Build ${{ matrix.arch }} ${{ matrix.addon }} add-on
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         addon: ${{ fromJson(needs.init.outputs.changed_addons) }}
-        arch: ["aarch64", "amd64", "armhf", "armv7", "i386"]
-
+    outputs:
+      build_matrix: ${{ steps.matrix.outputs.matrix }}
+      version: ${{ steps.normalize.outputs.version }}
+      name: ${{ steps.normalize.outputs.name }}
+      description: ${{ steps.normalize.outputs.description }}
+      url: ${{ steps.normalize.outputs.url }}
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4.1.7
+      - name: Check out the repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - name: Get information
+      - name: Get add-on information
         id: info
-        uses: home-assistant/actions/helpers/info@master
+        uses: home-assistant/actions/helpers/info@a7c616ce81ccda50150bf1595786c71b1883fabb # master
         with:
           path: "./${{ matrix.addon }}"
 
-      - name: Check if add-on should be built
-        id: check
+      - name: Normalize add-on information
+        id: normalize
         run: |
-          if [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
-             echo "build_arch=true" >> $GITHUB_OUTPUT;
-             echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT;
-             if [[ -z "${{ github.head_ref }}" ]] && [[ "${{ github.event_name }}" == "push" ]]; then
-                 echo "BUILD_ARGS=" >> $GITHUB_ENV;
-             fi
-           else
-             echo "${{ matrix.arch }} is not a valid arch for ${{ matrix.addon }}, skipping build";
-             echo "build_arch=false" >> $GITHUB_OUTPUT;
+          image=${{ steps.info.outputs.image }}
+          echo "image_name=${image##*/}" >> "$GITHUB_OUTPUT"
+          echo "registry_prefix=${image%/*}" >> "$GITHUB_OUTPUT"
+          version=${{ steps.info.outputs.version }}
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          name=${{ steps.info.outputs.name }}
+          echo "name=${name}" >> "$GITHUB_OUTPUT"
+          description=${{ steps.info.outputs.description }}
+          echo "description=${description}" >> "$GITHUB_OUTPUT"
+          url=${{ steps.info.outputs.url }}
+          if [[ -n "$url" && "$url" != "null" ]]; then
+            echo "url=${url}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Login to GitHub Container Registry
-        if: env.BUILD_ARGS != '--test'
-        uses: docker/login-action@v3.3.0
+      - name: Prepare build matrix
+        id: matrix
+        uses: home-assistant/builder/actions/prepare-multi-arch-matrix@4de35182ce1e329181bffcbcc84d33db5e2c7e10 # 2026.06.0
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          architectures: ${{ steps.info.outputs.architectures }}
+          image-name: ${{ steps.normalize.outputs.image_name }}
+          registry-prefix: ${{ steps.normalize.outputs.registry_prefix }}
 
-      - name: Build ${{ matrix.addon }} add-on
-        if: steps.check.outputs.build_arch == 'true'
-        uses: home-assistant/builder@2024.08.2
+  build:
+    name: Build ${{ matrix.arch }} image
+    needs: prepare
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.build_matrix) }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Build image
+        uses: home-assistant/builder/actions/build-image@4de35182ce1e329181bffcbcc84d33db5e2c7e10 # 2026.06.0
         with:
-          args: |
-            ${{ env.BUILD_ARGS }} \
-            --${{ matrix.arch }} \
-            --target /data/${{ matrix.addon }} \
-            --image "${{ steps.check.outputs.image }}" \
-            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon
+          arch: ${{ matrix.arch }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          context: "./grafana_cloud"
+          image: ${{ matrix.image }}
+          image-tags: |
+            ${{ needs.prepare.outputs.version }}
+            latest
+          labels: |
+            io.hass.type=addon
+            io.hass.name=${{ needs.prepare.outputs.name }}
+            io.hass.description=${{ needs.prepare.outputs.description }}
+            ${{ needs.prepare.outputs.url && format('io.hass.url={0}', needs.prepare.outputs.url) || '' }}
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'true' || 'false' }}
+          version: ${{ needs.prepare.outputs.version }}
+
+  manifest:
+    name: Publish multi-arch manifest
+    needs: [prepare, build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Get add-on information
+        id: info
+        uses: home-assistant/actions/helpers/info@a7c616ce81ccda50150bf1595786c71b1883fabb # master
+        with:
+          path: "./grafana_cloud"
+
+      - name: Normalize add-on information
+        id: normalize
+        run: |
+          image=${{ steps.info.outputs.image }}
+          echo "image_name=${image##*/}" >> "$GITHUB_OUTPUT"
+          echo "registry_prefix=${image%/*}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish multi-arch manifest
+        uses: home-assistant/builder/actions/publish-multi-arch-manifest@4de35182ce1e329181bffcbcc84d33db5e2c7e10 # 2026.06.0
+        with:
+          architectures: ${{ steps.info.outputs.architectures }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          image-name: ${{ steps.normalize.outputs.image_name }}
+          image-tags: |
+            ${{ needs.prepare.outputs.version }}
+            latest
+          registry-prefix: ${{ steps.normalize.outputs.registry_prefix }}
