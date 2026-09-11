@@ -6,7 +6,7 @@ RUN apk --update add libc6-compat && rm -rf /var/cache/apk/*
 
 RUN cd /tmp && \
     curl -sSLf -o alloy.zip "https://github.com/grafana/alloy/releases/download/${ALLOY_VERSION}/alloy-linux-${BUILD_ARCH//aarch64/arm64}.zip" && \
-    unzip alloy.zip && mv alloy-linux-* /usr/bin/grafana-alloy && \
+    unzip alloy.zip && mv alloy-linux-* /usr/bin/grafana-alloy && chmod +x /usr/bin/grafana-alloy && \
     rm alloy.zip
 
 COPY rootfs /
