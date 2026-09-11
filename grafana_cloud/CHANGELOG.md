@@ -1,5 +1,10 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+## 0.2.2
+
+- Fix Alloy config comment syntax preventing startup
+- Remove digest pins from build.yaml to satisfy addon linter schema
+
 ## 0.2.1
 
 - Fix alloy binary missing execute permission after unzip
