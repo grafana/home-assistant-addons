@@ -39,3 +39,34 @@ jobs:
         uses: frenck/action-addon-linter@f995494fd84fae6310d23617e66d0e37de4f14eb # v2.21.0
         with:
           path: "./${{ matrix.path }}"
+
+  alloy:
+    name: Validate Alloy config ${{ matrix.path }}
+    runs-on: ubuntu-latest
+    needs: find
+    strategy:
+      matrix:
+        path: ${{ fromJson(needs.find.outputs.addons) }}
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Validate Alloy config
+        env:
+          ADDON: ${{ matrix.path }}
+        run: |
+          config="${ADDON}/rootfs/config.alloy"
+          if [[ ! -f "${config}" ]]; then
+            echo "No Alloy config for ${ADDON}, nothing to validate"
+            exit 0
+          fi
+
+          version=$(sed -n 's/^ARG ALLOY_VERSION="\(.*\)"$/\1/p' "${ADDON}/Dockerfile")
+          if [[ -z "${version}" ]]; then
+            echo "::error file=${ADDON}/Dockerfile::Could not determine ALLOY_VERSION"
+            exit 1
+          fi
+
+          echo "Validating ${config} against Alloy ${version}"
+          docker run --rm -v "${PWD}/${config}:/config.alloy:ro" \
+            "grafana/alloy:${version}" validate /config.alloy
