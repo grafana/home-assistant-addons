@@ -1,5 +1,9 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+## 0.2.1
+
+- Fix alloy binary missing execute permission after unzip
+
 ## 0.2.0
 
 - Update to Alloy v1.19.2
