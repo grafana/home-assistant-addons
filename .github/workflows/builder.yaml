@@ -35,7 +35,7 @@ jobs:
 
       - name: Find add-on directories
         id: addons
-        uses: home-assistant/actions/helpers/find-addons@a7c616ce81ccda50150bf1595786c71b1883fabb # master
+        uses: home-assistant/actions/helpers/find-addons@58bff37c8947f690ace498be413a9b78d6f30f93 # master
 
       - name: Get changed add-ons
         id: changed_addons
@@ -85,7 +85,7 @@ jobs:
 
       - name: Get add-on information
         id: info
-        uses: home-assistant/actions/helpers/info@a7c616ce81ccda50150bf1595786c71b1883fabb # master
+        uses: home-assistant/actions/helpers/info@58bff37c8947f690ace498be413a9b78d6f30f93 # master
         with:
           path: "./${{ matrix.addon }}"
 
@@ -161,7 +161,7 @@ jobs:
 
       - name: Get add-on information
         id: info
-        uses: home-assistant/actions/helpers/info@a7c616ce81ccda50150bf1595786c71b1883fabb # master
+        uses: home-assistant/actions/helpers/info@58bff37c8947f690ace498be413a9b78d6f30f93 # master
         with:
           path: "./grafana_cloud"
 
