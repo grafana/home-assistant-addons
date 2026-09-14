@@ -13,3 +13,6 @@ configuration:
     description: How often to send metrics to Grafana Cloud
   log_level:
     name: Log Level
+  collect_addon_logs:
+    name: Collect Add-on Logs
+    description: Also send the logs of your other add-ons to Grafana Cloud

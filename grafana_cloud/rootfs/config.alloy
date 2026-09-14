@@ -36,19 +36,51 @@ prometheus.scrape "alloy" {
   scrape_interval = sys.env("SCRAPE_INTERVAL")
 }
 
-loki.source.file "homeassistant" {
+loki.relabel "journal" {
+  forward_to = []
+
+  rule {
+    source_labels = ["__journal_syslog_identifier"]
+    regex = sys.env("LOG_IDENTIFIERS")
+    action = "keep"
+  }
+
+  rule {
+    source_labels = ["__journal_syslog_identifier"]
+    regex = sys.env("SELF_IDENTIFIERS")
+    action = "drop"
+  }
+
+  rule {
+    source_labels = ["__journal_syslog_identifier"]
+    target_label = "component"
+  }
+
+  rule {
+    source_labels = ["__journal_syslog_identifier"]
+    target_label = "job"
+  }
+}
+
+loki.source.journal "homeassistant" {
   forward_to = [loki.process.homeassistant.receiver]
-  targets = [
-    {
-      "__path__" = "/homeassistant/home-assistant.log",
-      "instance" = sys.env("INSTANCE_NAME"),
-      "component" = "homeassistant",
-    },
-  ]
+  // Without an explicit path the journal is opened by machine ID, which never
+  // matches the one generated for this container, and no entries are read.
+  path = sys.env("JOURNAL_PATH")
+  relabel_rules = loki.relabel.journal.rules
+  labels = {
+    instance = sys.env("INSTANCE_NAME"),
+  }
 }
 
 loki.process "homeassistant" {
   forward_to = [grafana_cloud.stack.receivers.logs]
+  // Home Assistant colourises its console output. The capture group is required,
+  // stage.replace only rewrites captured groups.
+  stage.replace {
+    expression = "(\\x1b\\[[0-9;]*m)"
+    replace = ""
+  }
   stage.multiline {
     firstline = "^\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d{3} "
     max_lines = 1000

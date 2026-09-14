@@ -1,6 +1,6 @@
 build_from:
-  amd64: "ghcr.io/home-assistant/amd64-base:3.24"
-  aarch64: "ghcr.io/home-assistant/aarch64-base:3.24"
+  amd64: "ghcr.io/home-assistant/amd64-base-debian:trixie"
+  aarch64: "ghcr.io/home-assistant/aarch64-base-debian:trixie"
 labels:
   org.opencontainers.image.title: "Home Assistant Add-on: Grafana Cloud"
   org.opencontainers.image.description: "Grafana Cloud Addon."

@@ -12,6 +12,34 @@ export LOG_LEVEL=$(bashio::config 'log_level')
 export SCRAPE_INTERVAL=$(bashio::config 'scrape_interval')
 export ALLOY_DEPLOY_MODE=hass-addon-grafana-cloud
 
+# Syslog identifiers to collect from the host journal. Home Assistant Core logs
+# under "homeassistant", addons under "app_<slug>" and, before Supervisor
+# renamed their containers, "addon_<slug>".
+if bashio::config.true 'collect_addon_logs'; then
+  export LOG_IDENTIFIERS="homeassistant|app_.+|addon_.+"
+else
+  export LOG_IDENTIFIERS="homeassistant"
+fi
+
+# This addon's own logs already reach Grafana Cloud through the Alloy logging
+# block, so they are excluded from the journal. Supervisor prefixes the slug
+# with the repository ID, so the identifier is only known at runtime.
+SELF_SLUG=$(curl -sf -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+  http://supervisor/addons/self/info | jq -r '.data.slug // empty')
+if [ -z "${SELF_SLUG}" ]; then
+  bashio::log.warning "Could not determine this addon's slug, matching on name instead"
+  SELF_SLUG=".+_grafana_cloud"
+fi
+export SELF_IDENTIFIERS="(app|addon)_${SELF_SLUG}"
+
+# The host journal is persistent in /var/log/journal on most hosts and volatile
+# in /run/log/journal on the rest.
+if [ -n "$(ls -A /var/log/journal 2>/dev/null)" ]; then
+  export JOURNAL_PATH=/var/log/journal
+else
+  export JOURNAL_PATH=/run/log/journal
+fi
+
 CONFIG_FILE="/config.alloy"
 if bashio::fs.file_exists "/config/config.alloy"; then
   CONFIG_FILE="/config/config.alloy"
