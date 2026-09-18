@@ -1,6 +1,6 @@
 name: "Grafana Cloud"
 description: "Send metrics & logs to Grafana Cloud"
-version: "0.2.2"
+version: "0.3.0"
 slug: "grafana_cloud"
 init: false
 arch:
@@ -12,13 +12,16 @@ options:
   instance_name: homeassistant
   scrape_interval: 60s
   log_level: info
+  collect_addon_logs: false
 schema:
   stack_name: str
   access_token: str
   instance_name: str?
   scrape_interval: str?
   log_level: list(debug|info|warn|error)
+  collect_addon_logs: bool?
 homeassistant_api: true
+journald: true
 map:
   - homeassistant_config
   - addon_config:rw

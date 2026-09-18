@@ -1,8 +1,12 @@
-FROM ghcr.io/home-assistant/base:3.24@sha256:93ef607824e3f27e868f11b10938283a98bf880ed57bcf8eaa81c6c2d521f6f5
+FROM ghcr.io/home-assistant/base-debian:trixie@sha256:01e153da2c2579f2cf5010901da7bc31b1dd035921ea46ccaff22e521efa74a7
 
 ARG ALLOY_VERSION="v1.19.2"
 ARG BUILD_ARCH
-RUN apk --update add libc6-compat && rm -rf /var/cache/apk/*
+
+# loki.source.journal dlopens libsystemd.so.0 at runtime.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libsystemd0 unzip && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN cd /tmp && \
     curl -sSLf -o alloy.zip "https://github.com/grafana/alloy/releases/download/${ALLOY_VERSION}/alloy-linux-${BUILD_ARCH//aarch64/arm64}.zip" && \

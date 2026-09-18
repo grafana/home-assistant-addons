@@ -47,6 +47,10 @@ Copy the token, and paste it into the token field in the addon configuration.
 
 After saving the configuration, start the addon and it will begin exporting logs and metrics to Grafana Cloud.
 
+## Logs
+
+Home Assistant logs are read from the host's systemd journal, so log collection requires Home Assistant OS or a supervised install. Set the `collect_addon_logs` option to also export the logs of your other addons.
+
 [grafana]: https://grafana.com
 [grafana-cloud]: https://grafana.com/products/cloud/
 [grafana-alloy]: https://grafana.com/docs/alloy/latest/
