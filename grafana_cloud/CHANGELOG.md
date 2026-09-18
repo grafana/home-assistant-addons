@@ -6,6 +6,7 @@
 - Add `collect_addon_logs` option to also send the logs of your other addons
 - Switch to the Debian addon base, which provides the `libsystemd0` needed to read the journal
 - Strip ANSI colour codes from collected logs
+- Remove `build.yaml`, which Supervisor deprecated; the base image, labels and Alloy version now come from the Dockerfile
 
 ## 0.2.2
 
